@@ -1,0 +1,875 @@
+Класс подключения базы данных
+
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Data.SqlClient;
+
+namespace ArtGalery
+{
+    class DataBase
+    {
+        SqlConnection sqlConnection = new SqlConnection(@"Data Source=DESKTOP-IM1GQ6J\SQLEXPRESS; Initial Catalog=ArtGalery;Integrated Security=True");
+
+        public void openConnection()
+        {
+            if (sqlConnection.State == System.Data.ConnectionState.Closed)
+            {
+                sqlConnection.Open();
+            }
+
+        }
+
+        public void closeConnection()
+        {
+            if (sqlConnection.State == System.Data.ConnectionState.Open)
+            {
+                sqlConnection.Close();
+            }
+
+        }
+
+        public SqlConnection GetConnection()
+        {
+            return sqlConnection;
+        }
+    }
+} Листинг кода «Registration»
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace ArtGalery
+{
+    public partial class Registration : Form
+    {
+        int x = 0;
+        int y = 0;
+        int step = -5;
+        DataBase dataBase = new DataBase();
+        public Registration()
+        {
+            InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+            textBox1.TabStop = false;
+            textBox2.TabStop = false;
+
+            textBox1.GotFocus += textBox1_GotFocus;
+            textBox1.LostFocus += textBox1_LostFocus;
+            textBox2.GotFocus += textBox2_GotFocus;
+            textBox2.LostFocus += textBox2_LostFocus;
+
+            textBox1.Text = "Логин";
+            textBox2.Text = "Пароль";
+            textBox2.PasswordChar = '*';
+        }
+
+        private void pictureBox1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            x += step;
+            pictureBox1.Location = new Point(x, y);
+
+            if (x > this.Width)
+            {
+                x = -pictureBox1.Width;
+            }
+        }
+private void textBox2_TextChanged(object sender, EventArgs e)
+        {
+
+        }
+        private void textBox1_GotFocus(object sender, EventArgs e)
+        {
+            if (textBox1.Text == "Логин")
+            {
+                textBox1.Text = "";
+            }
+        }
+        private void textBox1_LostFocus(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                textBox1.Text = "Логин";
+            }
+        }
+
+        private void textBox2_GotFocus(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "Пароль")
+            {
+                textBox2.Text = "";
+            }
+        }
+        private void textBox2_LostFocus(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox2.Text))
+            {
+                textBox2.Text = "Пароль";
+            }
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            
+        }
+
+        private void button3_Click_1(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var login = textBox1.Text;
+            var password = textBox2.Text;
+            var user = 0;
+
+            string querystring = $"insert into Registration(login, password, role) values ('{login}','{password}', {user})";
+            SqlCommand command = new SqlCommand(querystring, dataBase.GetConnection());
+
+            dataBase.openConnection();
+
+            if (command.ExecuteNonQuery() == 1)
+            {
+                MessageBox.Show("Аккаунт успешно создан", "Успех");
+                Login frm_login = new Login();
+                this.Hide();
+                frm_login.ShowDialog();
+            }
+            else
+            {
+                MessageBox.Show("Аккаунт не создан");
+            }
+            dataBase.closeConnection();
+        }
+        private Boolean checkuser()
+        {
+            var login = textBox1.Text;
+            var password = textBox2.Text;
+
+            SqlDataAdapter adapter = new SqlDataAdapter();
+            DataTable table = new DataTable();
+            string querystring = $"select id, login, password from Registration where login = '(login)' and password = '(password)'";
+
+            SqlCommand command = new SqlCommand(querystring, dataBase.GetConnection());
+
+            adapter.SelectCommand = command;
+            adapter.Fill(table);
+
+            if (table.Rows.Count > 0)
+            {
+                MessageBox.Show("Пользователь уже существует");
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+
+
+Листинг кода «Login»
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+
+namespace ArtGalery
+{
+    public partial class Login : Form
+    {
+        int x = 0;
+        int y = 0;
+        int step = -5;
+        DataBase dataBase = new DataBase();
+        public Login()
+        {
+            InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+            textBox1.TabStop = false;
+            textBox2.TabStop = false;
+
+            textBox1.GotFocus += textBox1_GotFocus;
+            textBox1.LostFocus += textBox1_LostFocus;
+            textBox2.GotFocus += textBox2_GotFocus;
+            textBox2.LostFocus += textBox2_LostFocus;
+
+            textBox1.Text = "Логин";
+            textBox2.Text = "Пароль";
+            textBox2.PasswordChar = '*';
+        }
+
+        private void timer1_Tick(object sender, EventArgs e)
+        {
+            x += step;
+            pictureBox1.Location = new Point(x, y);
+
+            if(x > this.Width)
+            {
+                x = -pictureBox1.Width;
+            }
+        }
+  private void textBox1_GotFocus(object sender, EventArgs e)
+        {
+            if (textBox1.Text == "Логин")
+            {
+                textBox1.Text = "";
+            }
+        }
+        private void textBox1_LostFocus(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                textBox1.Text = "Логин";
+            }
+        }
+
+        private void textBox2_GotFocus(object sender, EventArgs e)
+        {
+            if (textBox2.Text == "Пароль")
+            {
+                textBox2.Text = "";
+            }
+        }
+        private void textBox2_LostFocus(object sender, EventArgs e)
+        {
+            if (string.IsNullOrWhiteSpace(textBox2.Text))
+            {
+                textBox2.Text = "Пароль";
+            }
+        }  private void button3_Click_1(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            Registration regis = new Registration();
+            regis.Show();
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            var login = textBox1.Text;
+            var password = textBox2.Text;
+
+            SqlDataAdapter adapter = new SqlDataAdapter();
+            DataTable table = new DataTable();
+
+            string querystring = $"select id, login, password, role from Registration where login = '{login}' and password = '{password}'";
+
+            SqlCommand command = new SqlCommand(querystring, dataBase.GetConnection());
+
+            adapter.SelectCommand = command;
+            adapter.Fill(table);
+
+            if(table.Rows.Count ==1)
+            {
+                string role = table.Rows[0]
+                    ["role"].ToString();
+
+                if(role == "admin")
+                {
+                    MessageBox.Show("Вы вошли как администратор");
+                    InfoFormAdmin infformadmin = new InfoFormAdmin();
+                    infformadmin.Show();
+                    this.Hide();
+  
+                }
+                else
+                {
+                    InfoForm infform = new InfoForm();
+                    infform.Show();
+                    this.Hide();
+
+                  
+                }
+               
+            }
+            else
+            {
+                MessageBox.Show("Аккаунт не найден");
+Листинг кода «Info»
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ArtGalery
+{
+    
+    public partial class InfoForm : Form
+    {
+        GlavMenu glavmenu;
+        bool sidebarExpand;
+        Category category;
+
+
+        int x = 0;
+        int y = 0;
+        int step = -5;
+        public InfoForm()
+        {
+            InitializeComponent();
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            glavmenu = new GlavMenu();
+            glavmenu.Show();
+            this.Hide();
+        }
+
+        private void sidebarTimer_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                sidebar.Width += 10;
+                if (sidebar.Width >= sidebar.MaximumSize.Width)
+                {
+                    sidebarExpand = false;
+                    sidebarTimer.Stop();
+                }
+            }
+            else
+            {
+                sidebar.Width -= 10;
+                if (sidebar.Width <= sidebar.MinimumSize.Width)
+                {
+                    sidebarExpand = true;
+                    sidebarTimer.Stop();
+                }
+            }
+        }
+
+        private void Mmenu_Click(object sender, EventArgs e)
+        {
+            sidebarTimer.Start();
+        }
+private void timer1_Tick(object sender, EventArgs e)
+        {
+            x += step;
+            pictureBox3.Location = new Point(x, y);
+
+            if (x > this.Width)
+            {
+                x = -pictureBox1.Width;
+            }
+        }   private void InfoForm_Load(object sender, EventArgs e)
+        {
+            timer1.Start();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            category = new Category();
+            category.Show();
+            this.Hide();
+        }
+Листинг кода «GlavMenu»
+
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+using System.Data.SqlClient;
+using System.Net;
+using System.IO;
+
+
+namespace ArtGalery
+{
+
+
+    public partial class GlavMenu : Form
+    {
+        bool sidebarExpand;
+        private DataTable imagesDataTable;
+        private int currentImageIndex = 0;
+        Category category;
+
+        Timer timer = new Timer();
+        public GlavMenu()
+        {
+
+            this.StartPosition = FormStartPosition.CenterScreen;
+            InitializeComponent();
+            LoadImagesFromDatabase();
+            DisplayImages();
+            this.MouseWheel += GlavMenu_MouseWheel;
+
+        }
+        private void LoadImagesFromDatabase()
+        {
+            // Подключение к базе данных
+            using (SqlConnection connection = new SqlConnection("Data Source=DESKTOP-IM1GQ6J\\SQLEXPRESS;Initial Catalog=ArtGalery;Integrated Security=True"))
+            {
+                // Загрузка данных из базы данных в DataTable
+                SqlDataAdapter adapter = new SqlDataAdapter("SELECT ImageURL, Title, Artist FROM Paintings", connection);
+                imagesDataTable = new DataTable();
+                adapter.Fill(imagesDataTable);
+            }
+        }
+        private void GlavMenu_MouseWheel(object sender, MouseEventArgs e)
+        {
+            if (e.Delta > 0)
+            {
+                currentImageIndex = (currentImageIndex - 1 + imagesDataTable.Rows.Count) % imagesDataTable.Rows.Count;
+            }
+            else
+            {
+                currentImageIndex = (currentImageIndex + 1) % imagesDataTable.Rows.Count;
+            }
+
+            // Отображаем текущее изображение
+            DisplayImages();
+        }
+
+        private void DisplayImages()
+        {
+            if (imagesDataTable != null && imagesDataTable.Rows.Count > 0)
+            {
+                // Отображение текущего изображения
+                string imageUrl = imagesDataTable.Rows[currentImageIndex]["ImageURL"].ToString();
+                pictureBox1.Image = Image.FromFile(imageUrl);
+                LabelTitle1.Text = imagesDataTable.Rows[currentImageIndex]["Title"].ToString();
+                labelAuthor1.Text = imagesDataTable.Rows[currentImageIndex]["Artist"].ToString();
+
+                // Отображение следующего изображения
+                int nextIndex = (currentImageIndex + 1) % imagesDataTable.Rows.Count;
+                imageUrl = imagesDataTable.Rows[nextIndex]["ImageURL"].ToString();
+                pictureBox2.Image = Image.FromFile(imageUrl);
+                LabelTitle2.Text = imagesDataTable.Rows[nextIndex]["Title"].ToString();
+                labelAuthor2.Text = imagesDataTable.Rows[nextIndex]["Artist"].ToString();
+
+                // Отображение предыдущего изображения
+                int prevIndex = (currentImageIndex - 1 + imagesDataTable.Rows.Count) % imagesDataTable.Rows.Count;
+                imageUrl = imagesDataTable.Rows[prevIndex]["ImageURL"].ToString();
+                pictureBox3.Image = Image.FromFile(imageUrl);
+                LabelTitle3.Text = imagesDataTable.Rows[prevIndex]["Title"].ToString();
+                labelAuthor3.Text = imagesDataTable.Rows[prevIndex]["Artist"].ToString();
+            }
+
+        }
+private void sidebarTimer_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                sidebar.Width += 10;
+                if (sidebar.Width >= sidebar.MaximumSize.Width)
+                {
+                    sidebarExpand = false;
+                    sidebarTimer.Stop();
+                }
+            }
+            else
+            {
+                sidebar.Width -= 10;
+                if (sidebar.Width <= sidebar.MinimumSize.Width)
+                {
+                    sidebarExpand = true;
+                    sidebarTimer.Stop();
+                }
+            }
+        }
+
+        private void GlavMenu1_Click(object sender, EventArgs e)
+        {
+
+        }
+
+        private void Mmenu_Click(object sender, EventArgs e)
+        {
+            sidebarTimer.Start();
+        }
+private void button3_Click(object sender, EventArgs e)
+        {
+            InfoForm infform = new InfoForm();
+            infform.Show();
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Category category = new Category();
+            category.Show();
+            this.Hide();
+        }
+ 
+
+Листинг кода «Category»
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ArtGalery
+{
+
+    public partial class Category : Form
+    {
+        bool sidebarExpand;
+        Paintings paintingss;
+        Sculptures sculpturess;
+        Photography photo;
+        GlavMenu glavmenu;
+        public Category()
+        {
+            InitializeComponent();
+            InitializeCategoryPictures();
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void Mmenu_Click(object sender, EventArgs e)
+        {
+            sidebarTimer.Start();
+        }
+
+        private void sidebarTimer_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                sidebar.Width += 10;
+                if (sidebar.Width >= sidebar.MaximumSize.Width)
+                {
+                    sidebarExpand = false;
+                    sidebarTimer.Stop();
+                }
+            }
+            else
+            {
+                sidebar.Width -= 10;
+                if (sidebar.Width <= sidebar.MinimumSize.Width)
+                {
+                    sidebarExpand = true;
+                    sidebarTimer.Stop();
+                }
+            }
+        }
+
+        private void Category_Load(object sender, EventArgs e)
+        {
+            sidebarTimer.Start();
+        }
+
+        private void pictureBox2_Click(object sender, EventArgs e)
+        {
+            sculpturess = new Sculptures();
+            sculpturess.Show();
+            this.Hide();
+        }
+        private void InitializeCategoryPictures()
+        {
+            pictureBoxPaintings.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxPaintings.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxPaintings);
+
+            pictureBoxSculpture.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxSculpture.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxSculpture);
+
+            pictureBoxPhotography.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxPhotography.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxPhotography);
+        }
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox pictureBox = sender as PictureBox;
+            if (pictureBox != null)
+            {
+                // Смена изображения при наведении курсора
+                if (pictureBox.Name == "pictureBoxPaintings")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo11.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxSculpture")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo22.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxPhotography")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo33.jpg");
+                }
+            }
+        }
+        private void PictureBox_MouseLeave(object sender, EventArgs e)
+        {
+            PictureBox pictureBox = sender as PictureBox;
+            if (pictureBox != null)
+            {
+                // Возвращение изначального изображения при уходе курсора
+                if (pictureBox.Name == "pictureBoxPaintings")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo1.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxSculpture")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo2.jpg");
+                }
+                else if(pictureBox.Name == "pictureBoxPhotography")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/photo3.jpg");
+                }
+            }
+        }
+
+        private void pictureBoxPaintings_Click(object sender, EventArgs e)
+        {
+            paintingss = new Paintings();
+            paintingss.Show();
+            this.Hide();
+        }
+
+        private void pictureBoxPhotography_Click(object sender, EventArgs e)
+        {
+            photo = new Photography();
+            photo.Show();
+            this.Hide();
+        }
+
+        private void GlavMenu1_Click(object sender, EventArgs e)
+        {
+            glavmenu = new GlavMenu();
+            glavmenu.Show();
+            this.Hide();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            InfoForm infform = new InfoForm();
+            infform.Show();
+            this.Hide();
+        }
+    }
+}
+
+Листинг кода «Paintings»\
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data;
+using System.Drawing;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Windows.Forms;
+
+namespace ArtGalery
+{
+    public partial class Paintings : Form
+    {
+        bool sidebarExpand;
+        GlavMenu glavmenu;
+        Abstract abstractt;
+        Peizaz peizaz;
+        Natur natur;
+        Portret portret;
+        public Paintings()
+        {
+            InitializeComponent();
+            InitializeCategoryPictures();
+            this.StartPosition = FormStartPosition.CenterScreen;
+        }
+        private void InitializeCategoryPictures()
+        {
+            pictureBoxABS.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxABS.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxABS);
+
+            pictureBoxPEI.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxPEI.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxNAT);
+
+            pictureBoxNAT.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxNAT.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxNAT);
+
+            pictureBoxPOR.MouseEnter += PictureBox_MouseEnter;
+            pictureBoxPOR.MouseLeave += PictureBox_MouseLeave;
+            this.Controls.Add(pictureBoxPOR);
+        }
+        private void PictureBox_MouseEnter(object sender, EventArgs e)
+        {
+            PictureBox pictureBox = sender as PictureBox;
+            if (pictureBox != null)
+            {
+                // Смена изображения при наведении курсора
+                if (pictureBox.Name == "pictureBoxABS")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto11.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxPEI")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto22.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxNAT")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto33.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxPOR")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto44.jpg");
+                }
+            }
+        }
+        private void PictureBox_MouseLeave(object sender, EventArgs e)
+        {
+            PictureBox pictureBox = sender as PictureBox;
+            if (pictureBox != null)
+            {
+                // Возвращение изначального изображения при уходе курсора
+                if (pictureBox.Name == "pictureBoxABS")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto1.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxPEI")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto2.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxNAT")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto3.jpg");
+                }
+                else if (pictureBox.Name == "pictureBoxPOR")
+                {
+                    pictureBox.Image = Image.FromFile("C:/Users/gtggg/source/repos/ArtGalery/ArtGalery/Photo/pphoto4.jpg");
+                }
+            }
+        }
+
+        private void Mmenu_Click(object sender, EventArgs e)
+        {
+            sidebarTimer.Start();
+        }
+
+        private void sidebarTimer_Tick(object sender, EventArgs e)
+        {
+            if (sidebarExpand)
+            {
+                sidebar.Width += 10;
+                if (sidebar.Width >= sidebar.MaximumSize.Width)
+                {
+                    sidebarExpand = false;
+                    sidebarTimer.Stop();
+                }
+            }
+            else
+            {
+                sidebar.Width -= 10;
+                if (sidebar.Width <= sidebar.MinimumSize.Width)
+                {
+                    sidebarExpand = true;
+                    sidebarTimer.Stop();
+                }
+            }
+        }
+
+        private void pictureBox4_Click(object sender, EventArgs e)
+        {
+            this.Close();
+        }
+
+        private void pictureBoxABS_Click(object sender, EventArgs e)
+        {
+            abstractt = new Abstract();
+            abstractt.Show();
+            this.Hide();
+        }
+
+        private void GlavMenu1_Click(object sender, EventArgs e)
+        {
+            glavmenu = new GlavMenu();
+            glavmenu.Show();
+            this.Hide();
+
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            InfoForm infform = new InfoForm();
+            infform.Show();
+            this.Hide();
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            Category category = new Category();
+            category.Show();
+            this.Hide();
+        }
+
+        private void pictureBoxPEI_Click(object sender, EventArgs e)
+        {
+            peizaz = new Peizaz();
+            peizaz.Show();
+            this.Hide();
+        }
+
+        private void pictureBoxNAT_Click(object sender, EventArgs e)
+        {
+            natur = new Natur();
+            natur.Show();
+            this.Hide();
+        }
+
+        private void pictureBoxPOR_Click(object sender, EventArgs e)
+        {
+            portret = new Portret();
+            portret.Show();
+            this.Hide();
+        }
+
+
+
+
+
+
